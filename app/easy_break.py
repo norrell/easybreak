@@ -1,7 +1,7 @@
 from ciphertext import CipherText
 from sys import exit
 
-class EventLoop:
+class EasyBreak:
 
     def __init__(self):
         self.ciphertext = None
@@ -145,4 +145,4 @@ class EventLoop:
     def reset_substitutions(self):
         self.substitutions = []
 
-event = EventLoop()
+event = EasyBreak()
