@@ -5,10 +5,11 @@ class CipherText:
 
     def __init__(self, string):
         self.text = string
+
         self._monogram_freqs = None
-        self._bigram_probs = None
-        self.trigram_probs = None
-        self.quadram_probs = None
+        self._bigram_freqs = None
+        self._trigram_freqs = None
+        self._quadram_freqs = None
 
     def __str__(self):
         return self.text
@@ -41,8 +42,9 @@ class CipherText:
         self._monogram_freqs = sorted_freqs
         return sorted_freqs
 
-    def get_std_monogram_freqs(self):
-        freqs = {
+    @staticmethod
+    def get_std_monogram_freqs():
+        return OrderedDict(sorted({
             'E': 0.1209652247516903,
             'T': 0.08938126949659495,
             'A': 0.08551690673195275,
@@ -69,6 +71,4 @@ class CipherText:
             'X': 0.0019135048594134572,
             'Q': 0.0010402453014323196,
             'Z': 0.001137563214703838
-        }
-
-        return OrderedDict(sorted(freqs.items(), key=lambda t: t[1], reverse=True))
+        }.items(), key=lambda t: t[1], reverse=True))

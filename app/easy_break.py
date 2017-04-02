@@ -79,7 +79,7 @@ class EventLoop:
 
     def print_high_freq_monograms(self):
         letter_freqs = list(self.ciphertext.get_monogram_freqs().items())
-        std_freqs = list(self.ciphertext.get_std_monogram_freqs().items())
+        std_freqs = list(CipherText.get_std_monogram_freqs().items())
         print('======\n'
               'Letter frequencies in ciphertext          English letter frequencies\n'
               '--------------------------------------------------------')
@@ -108,9 +108,10 @@ class EventLoop:
 
     def print_stats(self):
         self.print_high_freq_monograms()
-        self.print_high_freq_bigrams()
-        self.print_high_freq_trigrams()
-        self.print_high_freq_fourgrams()
+        # TODO
+        #self.print_high_freq_bigrams()
+        #self.print_high_freq_trigrams()
+        #self.print_high_freq_fourgrams()
 
     def suggest_substitutions(self):
         print('TODO')
