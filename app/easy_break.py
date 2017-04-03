@@ -83,7 +83,7 @@ class EasyBreak:
                 print('Oops...you picked an unknown option! Try again!')
 
     def print_high_freq_monograms(self):
-        letter_freqs = self.ciphertext.get_monogram_freqs()
+        letter_freqs = self.ciphertext.get_ngram_freqs(1)
         std_freqs = CipherText.get_std_monogram_freqs()
         print('======\n'
               'Letter frequencies in ciphertext          English letter frequencies\n'
@@ -95,7 +95,7 @@ class EasyBreak:
             print('--------------------------------------------------------')
 
     def print_high_freq_bigrams(self):
-        bigram_freqs = self.ciphertext.get_bigram_freqs()
+        bigram_freqs = self.ciphertext.get_ngram_freqs(2)
         std_freqs = self.ciphertext.get_std_bigram_freqs()
         print('======\n'
               'Bigram frequencies in ciphertext          English bigram frequencies\n'
@@ -107,7 +107,7 @@ class EasyBreak:
             print('--------------------------------------------------------')
 
     def print_high_freq_trigrams(self):
-        trigram_freqs = self.ciphertext.get_trigram_freqs()
+        trigram_freqs = self.ciphertext.get_ngram_freqs(3)
         std_freqs = self.ciphertext.get_std_trigram_freqs()
         print('======\n'
               'Trigram frequencies in ciphertext         English trigram frequencies\n'
@@ -119,15 +119,22 @@ class EasyBreak:
             print('--------------------------------------------------------')
 
     def print_high_freq_fourgrams(self):
+        fourgram_freqs = self.ciphertext.get_ngram_freqs(4)
+        std_freqs = self.ciphertext.get_std_fourgram_freqs()
         print('======\n'
               'Fourgram frequencies in ciphertext        English fourgram frequencies\n'
               '--------------------------------------------------------')
+        for i in range(len(fourgram_freqs)):
+            print('{0!s}: {1:.4f}'.format(fourgram_freqs[i][0], fourgram_freqs[i][1]), end='')
+            print("                             ", end=" ")
+            print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
+            print('--------------------------------------------------------')
 
     def print_stats(self):
         self.print_high_freq_monograms()
         self.print_high_freq_bigrams()
         self.print_high_freq_trigrams()
-        #self.print_high_freq_fourgrams()
+        self.print_high_freq_fourgrams()
 
     def suggest_substitutions(self):
         print('TODO')

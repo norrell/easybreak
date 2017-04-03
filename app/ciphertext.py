@@ -22,31 +22,33 @@ class CipherText:
     def text_without_whitespace(self):
         return ''.join(self.text.split())
 
-    def get_monogram_freqs(self):
-        if self._monogram_freqs is not None:
-            return self._monogram_freqs
-
+    def get_ngram_freqs(self, n):
         stripped_text = self.text_without_whitespace().upper()
         textlen = len(stripped_text)
 
-        mfreqs = {}
-        for c in stripped_text:
-            mfreqs[c] = mfreqs.get(c, 0) + 1
-            #if ch in ascii_uppercase:
-            #    freqs[ch] = freqs.get(ch, 0) + 1
-        for c, n in mfreqs.items():
-            mfreqs[c] = n / textlen
+        freqs = {}
+        for i in range(textlen):
+            ngram = stripped_text[i:i+n]
+            if len(ngram) == n:
+                freqs[ngram] = freqs.get(ngram, 0) + 1
 
-        mfreqs_list = list(mfreqs.items())
-        mfreqs_list.sort(key=lambda tup: tup[1], reverse=True)
-        self._monogram_freqs = mfreqs_list[:CipherText._HIGH_FREQ_RANGE]
-        return self._monogram_freqs
-        #for ch in ascii_uppercase:
-        #    if freqs.get(ch) is None:
-        #        freqs[ch] = 0
-        #sorted_freqs = OrderedDict(sorted(freqs.items(), key=lambda t: t[1], reverse=True))
-        #self._monogram_freqs = sorted_freqs
-        #return sorted_freqs
+        tot_ngrams = 0
+        if n == 1:
+            tot_ngrams = textlen
+        elif n == 2:
+            tot_ngrams = textlen if textlen % 2 == 0 else textlen - 1
+        elif n == 3:
+            tot_ngrams = textlen - 2
+        elif n == 4:
+            tot_ngrams = textlen - 3
+
+        for ngram, n in freqs.items():
+            freqs[ngram] = n / tot_ngrams
+
+        # keep only the most frequent
+        freqs_list = list(freqs.items())
+        freqs_list.sort(key=lambda tup: tup[1], reverse=True)
+        return freqs_list[:CipherText._HIGH_FREQ_RANGE]
 
     @staticmethod
     def get_std_monogram_freqs():
@@ -78,59 +80,6 @@ class CipherText:
             ('Q', 0.0010402453014323196),
             ('Z', 0.001137563214703838)
         ][:CipherText._HIGH_FREQ_RANGE]
-        # return OrderedDict(sorted({
-        #     'E': 0.1209652247516903,
-        #     'T': 0.08938126949659495,
-        #     'A': 0.08551690673195275,
-        #     'O': 0.07467265410810447,
-        #     'I': 0.0732511860723129,
-        #     'N': 0.07172184876283856,
-        #     'S': 0.06728203117491646,
-        #     'R': 0.0633271013284023,
-        #     'H': 0.04955707280570641,
-        #     'L': 0.04206464329306453,
-        #     'D': 0.03871183735737418,
-        #     'C': 0.03164435380900101,
-        #     'U': 0.026815809362304373,
-        #     'M': 0.025263217360184446,
-        #     'F': 0.021815103969122528,
-        #     'G': 0.020863354250923158,
-        #     'P': 0.020661660788966266,
-        #     'W': 0.018253618950416498,
-        #     'Y': 0.017213606152473405,
-        #     'B': 0.016047959168228293,
-        #     'V': 0.01059346274662571,
-        #     'K': 0.008086975227142329,
-        #     'J': 0.002197788956104563,
-        #     'X': 0.0019135048594134572,
-        #     'Q': 0.0010402453014323196,
-        #     'Z': 0.001137563214703838
-        # }.items(), key=lambda t: t[1], reverse=True))
-
-    def get_bigram_freqs(self):
-        if self._bigram_freqs is not None:
-            return self._bigram_freqs
-
-        stripped_text = self.text_without_whitespace().upper()
-        textlen = len(stripped_text)
-
-        bfreqs = {}
-        for i in range(textlen):
-            bgram = stripped_text[i:i+2]
-            if len(bgram) == 2:
-                bfreqs[bgram] = bfreqs.get(bgram, 0) + 1
-
-        tot_bgrams = textlen if textlen % 2 == 0 else textlen - 1
-        for bgram, n in bfreqs.items():
-            bfreqs[bgram] = n / tot_bgrams
-
-        # keep only the most frequent 8
-        bfreqs_list = list(bfreqs.items())
-        bfreqs_list.sort(key=lambda tup: tup[1], reverse=True)
-        #sorted_freqs = OrderedDict(sorted(freqs.items(), key=lambda t: t[1], reverse=True))
-        #self._monogram_freqs = sorted_freqs
-        self._bigram_freqs = bfreqs_list[:CipherText._HIGH_FREQ_RANGE]
-        return self._bigram_freqs
 
     @staticmethod
     def get_std_bigram_freqs():
@@ -186,31 +135,6 @@ class CipherText:
             ('LA', 0.005360229277177168),
             ('EL', 0.005340324916836537)
         ][:CipherText._HIGH_FREQ_RANGE]
-
-    def get_trigram_freqs(self):
-        if self._trigram_freqs is not None:
-            return self._trigram_freqs
-
-        stripped_text = self.text_without_whitespace().upper()
-        textlen = len(stripped_text)
-
-        tfreqs = {}
-        for i in range(textlen):
-            tgram = stripped_text[i:i+3]
-            if len(tgram) == 3:
-                tfreqs[tgram] = tfreqs.get(tgram, 0) + 1
-
-        tot_tgrams = textlen - 2
-        for tgram, n in tfreqs.items():
-            tfreqs[tgram] = n / tot_tgrams
-
-        # keep only the most frequent 8
-        tfreqs_list = list(tfreqs.items())
-        tfreqs_list.sort(key=lambda tup: tup[1], reverse=True)
-        #sorted_freqs = OrderedDict(sorted(freqs.items(), key=lambda t: t[1], reverse=True))
-        #self._monogram_freqs = sorted_freqs
-        self._trigram_freqs = tfreqs_list[:CipherText._HIGH_FREQ_RANGE]
-        return self._trigram_freqs
 
     @staticmethod
     def get_std_trigram_freqs():
@@ -315,4 +239,109 @@ class CipherText:
             ('ARE', 0.0013905281330712485),
             ('ORE', 0.0013897088902591484),
             ('IST', 0.0013847934333865476)
+        ][:CipherText._HIGH_FREQ_RANGE]
+
+    @staticmethod
+    def get_std_fourgram_freqs():
+        return [
+            ('THAT', 0.0034350860491922674),
+            ('THER', 0.0033026417584014057),
+            ('DTHE', 0.0023894588544743096),
+            ('WITH', 0.0023788086950086527),
+            ('NTHE', 0.002345765892563922),
+            ('TTHE', 0.002083061959077718),
+            ('OTHE', 0.002062853964194164),
+            ('OFTH', 0.002038549754131511),
+            ('TION', 0.0020265341896061545),
+            ('FTHE', 0.0019877566859106857),
+            ('HERE', 0.001982568146683827),
+            ('THES', 0.0018146233243407756),
+            ('ETHE', 0.0016447669349141448),
+            ('THEM', 0.0015442731225202538),
+            ('EAND', 0.0015150534542426822),
+            ('INGT', 0.0014940262163233083),
+            ('ANDT', 0.0014770951935830332),
+            ('OULD', 0.0014547025506039596),
+            ('SAND', 0.0014366792038159248),
+            ('NDTH', 0.0013479278749354505),
+            ('THEC', 0.0013293583661235359),
+            ('STHE', 0.0013208928547533982),
+            ('THIN', 0.0012982271307623847),
+            ('INTH', 0.0012744690827236117),
+            ('SAID', 0.0012673689764131737),
+            ('EDTH', 0.001252622601768418),
+            ('ATTH', 0.0012313222828371042),
+            ('HING', 0.0012053795867028117),
+            ('TOTH', 0.0011966409943207342),
+            ('EVER', 0.0011117127996074186),
+            ('IGHT', 0.001100516478117882),
+            ('WERE', 0.0010961471819268432),
+            ('THEY', 0.0010743007009716495),
+            ('THIS', 0.0010712968098403105),
+            ('THEF', 0.0010641967035298725),
+            ('EDTO', 0.0010538196250761554),
+            ('NGTH', 0.0010535465440642156),
+            ('ANDS', 0.001034977035252301),
+            ('WHAT', 0.0010161344454284464),
+            ('OUGH', 0.0010131305542971072),
+            ('THEP', 0.0010128574732851674),
+            ('RTHE', 0.0010082150960821887),
+            ('HAVE', 0.0009992034226881713),
+            ('INGA', 0.000993468721437433),
+            ('FROM', 0.0009866416961389348),
+            ('EWAS', 0.0009806339138762566),
+            ('INCE', 0.0009623374860762819),
+            ('DAND', 0.0009511411645867451),
+            ('THOU', 0.0009443141392882471),
+            ('TAND', 0.0009246523064285728),
+            ('ATIO', 0.0009123636608912763),
+            ('DNOT', 0.0008959788001748811),
+            ('MENT', 0.000885874802733104),
+            ('HECO', 0.0008771362103510266),
+            ('TING', 0.0008735861571958076),
+            ('ONTH', 0.0008667591318973095),
+            ('RINC', 0.0008623898357062708),
+            ('PRIN', 0.0008438203268943561),
+            ('THEW', 0.0008249777370705016),
+            ('OUND', 0.0008072274712944067),
+            ('UGHT', 0.0008039504991511277),
+            ('THEI', 0.0007976696358765095),
+            ('ATHE', 0.0007946657447451703),
+            ('ANDA', 0.0007905695295660715),
+            ('EHAD', 0.0007845617473033932),
+            ('TWAS', 0.000782104018195934),
+            ('HICH', 0.0007703615346825173),
+            ('WHIC', 0.0007676307245631182),
+            ('SOME', 0.0007668114815272985),
+            ('THEN', 0.0007651729954556589),
+            ('HEHA', 0.0007597113752168604),
+            ('YTHE', 0.0007482419727153838),
+            ('GTHE', 0.0007466034866437443),
+            ('ERTH', 0.0007430534334885253),
+            ('NDER', 0.0007414149474168857),
+            ('VERY', 0.0007356802461661474),
+            ('EFOR', 0.0007318571119989885),
+            ('HTHE', 0.0007201146284855719),
+            ('HEWA', 0.0007121952791393142),
+            ('THED', 0.0007111029550915545),
+            ('INGH', 0.0007009989576497774),
+            ('THET', 0.0006977219855064983),
+            ('SELF', 0.0006966296614587387),
+            ('HATT', 0.0006944450133632193),
+            ('KING', 0.0006930796083035197),
+            ('ERED', 0.0006878910690766612),
+            ('THEE', 0.0006862525830050217),
+            ('NING', 0.0006859795019930817),
+            ('ANDW', 0.0006854333399692019),
+            ('EDAN', 0.0006821563678259229),
+            ('ANDH', 0.0006786063146707039),
+            ('YAND', 0.0006772409096110043),
+            ('ANDI', 0.0006766947475871244),
+            ('WOUL', 0.0006753293425274248),
+            ('HESA', 0.0006652253450856477),
+            ('RAND', 0.0006627676159781885),
+            ('THEO', 0.0006583983197871497),
+            ('EDHI', 0.0006420134590707545),
+            ('INGS', 0.0006376441628797157),
+            ('BEEN', 0.0006319094616289774)
         ][:CipherText._HIGH_FREQ_RANGE]
