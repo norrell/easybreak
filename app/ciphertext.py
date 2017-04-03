@@ -16,6 +16,9 @@ class CipherText:
     def __str__(self):
         return self.text
 
+    def get_text(self):
+        return self.text
+
     def replace(self, cchar, pchar):
         return self.text.replace(cchar, pchar)
 

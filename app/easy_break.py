@@ -9,8 +9,7 @@ class EasyBreak:
         self.substitutions = []
 
         self.print_welcome_message()
-        self.accept_ciphertext_file()
-        self.start_options_loop()
+        self.run()
 
     def print_welcome_message(self):
         print('======\n'
@@ -22,11 +21,17 @@ class EasyBreak:
               '2017, Maria Candela Restless Morena Pampers etc.\n'
               '======')
 
-    def print_ciphertext(self):
-        print('------')
-        print('Ciphertext:')
-        print('------')
-        print(self.ciphertext)
+    def run(self):
+        self.accept_ciphertext_file()
+        self.print_ciphertext()
+        while True:
+            try:
+                command = input('>>> ')
+                self.parse_command(command)
+            except ValueError as err:
+                print('------\n' +
+                      str(err) + 'Try again!')
+                continue
 
     def accept_ciphertext_file(self):
         filename = input("What's the file containing the ciphertext? ")
@@ -38,97 +43,105 @@ class EasyBreak:
             print('------')
             self.accept_ciphertext_file()
 
-        self.print_ciphertext()
+    def print_help(self):
+        print('------')
+        print('Help:\n'
+              '(Note: uppercase is CIPHERTEXT, lowercase is plaintext)\n'
+              "'a X y' : add the substitution rule X~y\n"
+              "'d y'   : delete the substitution rule for y\n"
+              "'r'     : reset the substitution rules\n"
+              "'p s'   : print the substitution rules\n"
+              "'s'     : print the ciphertext statistics from frequency analysis\n"
+              "'p'     : print the ciphertext with the substitution rules\n"
+              "'p p'   : print only the plaintext letters substituted so far\n"
+              "'#'     : show substitution hints from frequency analysis\n"
+              "'?'     : print this list\n"
+              "'q'     : quit")
+        print('------')
 
-    def print_options(self):
-        print('======\n'
-              'What would you like to do now?\n'
-              '1: print ciphertext stats, 2: suggest substitutions, 3: add substitution(s), 4: delete substitution(s)\n'
-              '5: print added substitutions, 6: print ciphertext with substitutions, 7: reset substitutions, 8: quit\n'
-              '9: print partial plaintext')
-
-    def start_options_loop(self):
-        while True:
-            self.print_options()
-            try:
-                choice = int(input('Your choice: '))
-            except Exception:
-                print('------\n'
-                      'Oops...you picked an unknown option! Try again!')
-                continue
-            if choice == 1:
-                self.print_stats()
-            elif choice == 2:
-                self.suggest_substitutions()
-            elif choice == 3:
-                self.add_substitutions()
-                self.print_ciphertext_with_substitutions()
-            elif choice == 4:
-                self.delete_substitutions()
-                self.print_ciphertext_with_substitutions()
-            elif choice == 5:
-                self.print_substitutions()
-            elif choice ==6:
-                self.print_ciphertext_with_substitutions()
-            elif choice == 7:
-                self.reset_substitutions()
-            elif choice == 8:
-                print('======\n'
-                      'Bye bye!\n'
-                      '======')
-                exit(0)
-            elif choice == 9:
+    def parse_command(self, string):
+        string = ''.join(string.split())
+        command = string[0].lower()
+        if command == 'a':  # add
+            self.add_substitutions(string[1:])
+            self.print_ciphertext_with_substitutions()
+        elif command == 'r':  # reset
+            self.reset_substitutions()
+            self.print_ciphertext()
+        elif command == 'd':  # delete
+            self.delete_substitutions(string[1:])
+            self.print_ciphertext_with_substitutions()
+        elif command == 's':  # stats
+            self.print_stats()
+        elif command == 'p':  # print
+            if len(string) == 2 and string[1] == 'p':
                 self.print_partial_plaintext()
+            elif len(string) == 2 and string[1] == 's':
+                self.print_substitutions()
             else:
-                print('Oops...you picked an unknown option! Try again!')
+                self.print_ciphertext_with_substitutions()
+        elif command == '#':
+            self.suggest_substitutions()
+        elif command == '?':  # help
+            self.print_help()
+        elif command == 'q':  # quit
+            self.quit()
+        else:
+            raise ValueError('')
+
+    def quit(self):
+        print('======\n'
+              'Bye bye!\n'
+              '======')
+        exit(0)
 
     def print_high_freq_monograms(self):
         letter_freqs = self.ciphertext.get_ngram_freqs(1)
         std_freqs = CipherText.get_std_monogram_freqs()
         print('======\n'
-              'Letter frequencies in ciphertext          English letter frequencies\n'
-              '--------------------------------------------------------')
+              'Monograms (cipher)          English\n'
+              '-------------------------------------')
         for i in range(len(letter_freqs)):
             print('{0!s}: {1:.4f}'.format(letter_freqs[i][0], letter_freqs[i][1]), end='')
-            print("                                ", end=" ")
+            print("                  ", end=" ")
             print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
-            print('--------------------------------------------------------')
+            print('-------------------------------------')
 
     def print_high_freq_bigrams(self):
         bigram_freqs = self.ciphertext.get_ngram_freqs(2)
         std_freqs = self.ciphertext.get_std_bigram_freqs()
         print('======\n'
-              'Bigram frequencies in ciphertext          English bigram frequencies\n'
-              '--------------------------------------------------------')
+              'Bigrams (cipher)            English\n'
+              '--------------------------------------')
         for i in range(len(bigram_freqs)):
             print('{0!s}: {1:.4f}'.format(bigram_freqs[i][0], bigram_freqs[i][1]), end='')
-            print("                               ", end=" ")
+            print("                 ", end=" ")
             print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
-            print('--------------------------------------------------------')
+            print('--------------------------------------')
 
     def print_high_freq_trigrams(self):
         trigram_freqs = self.ciphertext.get_ngram_freqs(3)
         std_freqs = self.ciphertext.get_std_trigram_freqs()
         print('======\n'
-              'Trigram frequencies in ciphertext         English trigram frequencies\n'
-              '--------------------------------------------------------')
+              'Trigrams (cipher)           English\n'
+              '---------------------------------------')
         for i in range(len(trigram_freqs)):
             print('{0!s}: {1:.4f}'.format(trigram_freqs[i][0], trigram_freqs[i][1]), end='')
-            print("                              ", end=" ")
+            print("                ", end=" ")
             print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
-            print('--------------------------------------------------------')
+            print('---------------------------------------')
 
     def print_high_freq_fourgrams(self):
         fourgram_freqs = self.ciphertext.get_ngram_freqs(4)
         std_freqs = self.ciphertext.get_std_fourgram_freqs()
         print('======\n'
-              'Fourgram frequencies in ciphertext        English fourgram frequencies\n'
-              '--------------------------------------------------------')
+              'Fourgrams (cipher)          English\n'
+              '----------------------------------------')
         for i in range(len(fourgram_freqs)):
             print('{0!s}: {1:.4f}'.format(fourgram_freqs[i][0], fourgram_freqs[i][1]), end='')
-            print("                             ", end=" ")
+            print("               ", end=" ")
             print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
-            print('--------------------------------------------------------')
+            print('----------------------------------------')
 
     def print_stats(self):
         self.print_high_freq_monograms()
@@ -139,23 +152,24 @@ class EasyBreak:
     def suggest_substitutions(self):
         print('TODO')
 
-    def add_substitutions(self):
-        print('------')
-        cchar = ''.join(input('Ciphertext character(s): ').upper().split())
-        pchar = ''.join(input('Plaintext character(s) to use: ').lower().split())
-
+    def add_substitutions(self, string):
+        cchar = re.sub(r"[a-z ]", '', string)
+        pchar = re.sub(r"[A-Z ]", '', string)
+        #cchar = ''.join(input('Ciphertext character(s): ').upper().split())
+        #pchar = ''.join(input('Plaintext character(s) to use: ').lower().split())
         if len(cchar) != len(pchar):
             raise ValueError('Provide the same amount of ciphertext and plaintext characters!')
 
         for pair in zip(cchar, pchar):
             self.substitutions.append(pair)
 
-    def delete_substitutions(self):
-        print('------')
-        cchar = ''.join(input('Which plaintext letter(s) do you want to undo? ').lower().split())
-        for c in cchar:
+    def delete_substitutions(self, string):
+        #print('------')
+        #cchar = ''.join(input('Which plaintext letter(s) do you want to undo? ').lower().split())
+        pchar = re.sub(r"[A-Z ]", '', string)
+        for p in pchar:
             for sub in self.substitutions:
-                if sub[1] == c:
+                if sub[1] == p:
                     self.substitutions.remove(sub)
 
     def print_substitutions(self):
@@ -165,10 +179,17 @@ class EasyBreak:
             print("'{}' -> '{}'".format(sub[0], sub[1]))
 
     def apply_substitutions(self):
-        partial = self.ciphertext
+        partial = self.ciphertext.get_text()
         for sub in self.substitutions:
             partial = partial.replace(sub[0], sub[1])
         return partial
+
+    def print_ciphertext(self):
+        print('------')
+        print('Ciphertext:')
+        print('------')
+        print(self.ciphertext)
+        print('------')
 
     def print_partial_plaintext(self):
         print('------\n'
@@ -176,7 +197,9 @@ class EasyBreak:
               '------')
         partial = self.apply_substitutions()
         partial = re.sub(r"[A-Z]", " ", partial)
-        print(partial)
+        if not partial.isspace():
+            print(partial)
+            print('------')
 
     def print_ciphertext_with_substitutions(self):
         print('------\n'
@@ -184,6 +207,7 @@ class EasyBreak:
               '------')
         partial = self.apply_substitutions()
         print(partial)
+        print('------')
 
     def reset_substitutions(self):
         self.substitutions = []
