@@ -1,4 +1,5 @@
 from ciphertext import CipherText
+import re
 from sys import exit
 
 class EasyBreak:
@@ -43,7 +44,8 @@ class EasyBreak:
         print('======\n'
               'What would you like to do now?\n'
               '1: print ciphertext stats, 2: suggest substitutions, 3: add substitution(s), 4: delete substitution(s)\n'
-              '5: print added substitutions, 6: print ciphertext with substitutions, 7: reset substitutions, 8: quit')
+              '5: print added substitutions, 6: print ciphertext with substitutions, 7: reset substitutions, 8: quit\n'
+              '9: print partial plaintext')
 
     def start_options_loop(self):
         while True:
@@ -63,6 +65,7 @@ class EasyBreak:
                 self.print_ciphertext_with_substitutions()
             elif choice == 4:
                 self.delete_substitutions()
+                self.print_ciphertext_with_substitutions()
             elif choice == 5:
                 self.print_substitutions()
             elif choice ==6:
@@ -74,32 +77,46 @@ class EasyBreak:
                       'Bye bye!\n'
                       '======')
                 exit(0)
+            elif choice == 9:
+                self.print_partial_plaintext()
             else:
                 print('Oops...you picked an unknown option! Try again!')
 
     def print_high_freq_monograms(self):
-        letter_freqs = list(self.ciphertext.get_monogram_freqs().items())
-        std_freqs = list(CipherText.get_std_monogram_freqs().items())
+        letter_freqs = self.ciphertext.get_monogram_freqs()
+        std_freqs = CipherText.get_std_monogram_freqs()
         print('======\n'
               'Letter frequencies in ciphertext          English letter frequencies\n'
               '--------------------------------------------------------')
-        for i in range(6):
+        for i in range(len(letter_freqs)):
             print('{0!s}: {1:.4f}'.format(letter_freqs[i][0], letter_freqs[i][1]), end='')
             print("                                ", end=" ")
             print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
             print('--------------------------------------------------------')
 
     def print_high_freq_bigrams(self):
-        bigram_freqs = list(self.ciphertext.get_bigram_freqs().items())
-        std_freqs = list(self.ciphertext.get_std_bigram_freqs().items())
+        bigram_freqs = self.ciphertext.get_bigram_freqs()
+        std_freqs = self.ciphertext.get_std_bigram_freqs()
         print('======\n'
               'Bigram frequencies in ciphertext          English bigram frequencies\n'
               '--------------------------------------------------------')
+        for i in range(len(bigram_freqs)):
+            print('{0!s}: {1:.4f}'.format(bigram_freqs[i][0], bigram_freqs[i][1]), end='')
+            print("                               ", end=" ")
+            print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
+            print('--------------------------------------------------------')
 
     def print_high_freq_trigrams(self):
+        trigram_freqs = self.ciphertext.get_trigram_freqs()
+        std_freqs = self.ciphertext.get_std_trigram_freqs()
         print('======\n'
               'Trigram frequencies in ciphertext         English trigram frequencies\n'
               '--------------------------------------------------------')
+        for i in range(len(trigram_freqs)):
+            print('{0!s}: {1:.4f}'.format(trigram_freqs[i][0], trigram_freqs[i][1]), end='')
+            print("                              ", end=" ")
+            print("{0!s}: {1:.4f}".format(std_freqs[i][0], std_freqs[i][1]))
+            print('--------------------------------------------------------')
 
     def print_high_freq_fourgrams(self):
         print('======\n'
@@ -108,9 +125,8 @@ class EasyBreak:
 
     def print_stats(self):
         self.print_high_freq_monograms()
-        # TODO
-        #self.print_high_freq_bigrams()
-        #self.print_high_freq_trigrams()
+        self.print_high_freq_bigrams()
+        self.print_high_freq_trigrams()
         #self.print_high_freq_fourgrams()
 
     def suggest_substitutions(self):
@@ -128,18 +144,38 @@ class EasyBreak:
             self.substitutions.append(pair)
 
     def delete_substitutions(self):
-        print('TODO')
+        print('------')
+        cchar = ''.join(input('Which plaintext letter(s) do you want to undo? ').lower().split())
+        for c in cchar:
+            for sub in self.substitutions:
+                if sub[1] == c:
+                    self.substitutions.remove(sub)
 
     def print_substitutions(self):
-        print('TODO')
+        print('------')
+        print('Active substitutions:')
+        for sub in self.substitutions:
+            print("'{}' -> '{}'".format(sub[0], sub[1]))
+
+    def apply_substitutions(self):
+        partial = self.ciphertext
+        for sub in self.substitutions:
+            partial = partial.replace(sub[0], sub[1])
+        return partial
+
+    def print_partial_plaintext(self):
+        print('------\n'
+              'Plaintext:\n'
+              '------')
+        partial = self.apply_substitutions()
+        partial = re.sub(r"[A-Z]", " ", partial)
+        print(partial)
 
     def print_ciphertext_with_substitutions(self):
         print('------\n'
               'Ciphertext:\n'
               '------')
-        partial = self.ciphertext
-        for sub in self.substitutions:
-            partial = partial.replace(sub[0], sub[1])
+        partial = self.apply_substitutions()
         print(partial)
 
     def reset_substitutions(self):
