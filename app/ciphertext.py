@@ -6,24 +6,16 @@ class CipherText:
     _HIGH_FREQ_RANGE = 12
 
     def __init__(self, string):
-        self.text = string
-
-        self._monogram_freqs = None
-        self._bigram_freqs = None
-        self._trigram_freqs = None
-        self._quadram_freqs = None
-
-    def __str__(self):
-        return self.text
+        self._text = string
 
     def get_text(self):
-        return self.text
+        return self._text
 
     def replace(self, cchar, pchar):
-        return self.text.replace(cchar, pchar)
+        return self._text.replace(cchar, pchar)
 
     def text_without_whitespace(self):
-        return ''.join(self.text.split())
+        return ''.join(self._text.split())
 
     def get_ngram_freqs(self, n):
         stripped_text = self.text_without_whitespace().upper()
@@ -35,20 +27,10 @@ class CipherText:
             if len(ngram) == n:
                 freqs[ngram] = freqs.get(ngram, 0) + 1
 
-        tot_ngrams = 0
-        if n == 1:
-            tot_ngrams = textlen
-        elif n == 2:
-            tot_ngrams = textlen if textlen % 2 == 0 else textlen - 1
-        elif n == 3:
-            tot_ngrams = textlen - 2
-        elif n == 4:
-            tot_ngrams = textlen - 3
-
+        tot_ngrams = textlen - (n - 1)
         for ngram, n in freqs.items():
             freqs[ngram] = n / tot_ngrams
 
-        # keep only the most frequent
         freqs_list = list(freqs.items())
         freqs_list.sort(key=lambda tup: tup[1], reverse=True)
         return freqs_list[:CipherText._HIGH_FREQ_RANGE]

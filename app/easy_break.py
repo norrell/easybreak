@@ -5,10 +5,9 @@ from sys import exit
 class EasyBreak:
 
     def __init__(self):
-        self.ciphertext = None
-        self.substitutions = []
+        self._ciphertext = None
+        self._substitutions = []
 
-        self.print_welcome_message()
         self.run()
 
     def print_welcome_message(self):
@@ -22,6 +21,7 @@ class EasyBreak:
               '======')
 
     def run(self):
+        self.print_welcome_message()
         self.accept_ciphertext_file()
         self.print_ciphertext()
         while True:
@@ -37,7 +37,7 @@ class EasyBreak:
         filename = input("What's the file containing the ciphertext? ")
         try:
             with open(filename, 'r') as f:
-                self.ciphertext = CipherText(f.read())
+                self._ciphertext = CipherText(f.read())
         except Exception:
             print('Oops...file not found. Check the path and try again!')
             print('------')
@@ -62,6 +62,7 @@ class EasyBreak:
     def parse_command(self, string):
         string = ''.join(string.split())
         command = string[0].lower()
+
         if command == 'a':  # add
             self.add_substitutions(string[1:])
             self.print_ciphertext_with_substitutions()
@@ -96,7 +97,7 @@ class EasyBreak:
         exit(0)
 
     def print_high_freq_monograms(self):
-        letter_freqs = self.ciphertext.get_ngram_freqs(1)
+        letter_freqs = self._ciphertext.get_ngram_freqs(1)
         std_freqs = CipherText.get_std_monogram_freqs()
         print('======\n'
               'Monograms (cipher)          English\n'
@@ -108,8 +109,8 @@ class EasyBreak:
             print('-------------------------------------')
 
     def print_high_freq_bigrams(self):
-        bigram_freqs = self.ciphertext.get_ngram_freqs(2)
-        std_freqs = self.ciphertext.get_std_bigram_freqs()
+        bigram_freqs = self._ciphertext.get_ngram_freqs(2)
+        std_freqs = self._ciphertext.get_std_bigram_freqs()
         print('======\n'
               'Bigrams (cipher)            English\n'
               '--------------------------------------')
@@ -120,8 +121,8 @@ class EasyBreak:
             print('--------------------------------------')
 
     def print_high_freq_trigrams(self):
-        trigram_freqs = self.ciphertext.get_ngram_freqs(3)
-        std_freqs = self.ciphertext.get_std_trigram_freqs()
+        trigram_freqs = self._ciphertext.get_ngram_freqs(3)
+        std_freqs = self._ciphertext.get_std_trigram_freqs()
         print('======\n'
               'Trigrams (cipher)           English\n'
               '---------------------------------------')
@@ -132,8 +133,8 @@ class EasyBreak:
             print('---------------------------------------')
 
     def print_high_freq_fourgrams(self):
-        fourgram_freqs = self.ciphertext.get_ngram_freqs(4)
-        std_freqs = self.ciphertext.get_std_fourgram_freqs()
+        fourgram_freqs = self._ciphertext.get_ngram_freqs(4)
+        std_freqs = self._ciphertext.get_std_fourgram_freqs()
         print('======\n'
               'Fourgrams (cipher)          English\n'
               '----------------------------------------')
@@ -155,61 +156,54 @@ class EasyBreak:
     def add_substitutions(self, string):
         cchar = re.sub(r"[a-z ]", '', string)
         pchar = re.sub(r"[A-Z ]", '', string)
-        #cchar = ''.join(input('Ciphertext character(s): ').upper().split())
-        #pchar = ''.join(input('Plaintext character(s) to use: ').lower().split())
         if len(cchar) != len(pchar):
             raise ValueError('Provide the same amount of ciphertext and plaintext characters!')
 
         for pair in zip(cchar, pchar):
-            self.substitutions.append(pair)
+            self._substitutions.append(pair)
 
     def delete_substitutions(self, string):
-        #print('------')
-        #cchar = ''.join(input('Which plaintext letter(s) do you want to undo? ').lower().split())
         pchar = re.sub(r"[A-Z ]", '', string)
         for p in pchar:
-            for sub in self.substitutions:
+            for sub in self._substitutions:
                 if sub[1] == p:
-                    self.substitutions.remove(sub)
+                    self._substitutions.remove(sub)
 
     def print_substitutions(self):
         print('------')
         print('Active substitutions:')
-        for sub in self.substitutions:
+        for sub in self._substitutions:
             print("'{}' -> '{}'".format(sub[0], sub[1]))
 
     def apply_substitutions(self):
-        partial = self.ciphertext.get_text()
-        for sub in self.substitutions:
+        partial = self._ciphertext.get_text()
+        for sub in self._substitutions:
             partial = partial.replace(sub[0], sub[1])
         return partial
 
-    def print_ciphertext(self):
+    def print_ciphertext(self, subs=False):
         print('------')
         print('Ciphertext:')
         print('------')
-        print(self.ciphertext)
+        if subs:
+            print(self.apply_substitutions())
+        else:
+            print(self._ciphertext.get_text())
         print('------')
+
+    def print_ciphertext_with_substitutions(self):
+        self.print_ciphertext(subs=True)
 
     def print_partial_plaintext(self):
         print('------\n'
               'Plaintext:\n'
               '------')
-        partial = self.apply_substitutions()
-        partial = re.sub(r"[A-Z]", " ", partial)
+        partial = re.sub(r"[A-Z]", " ", self.apply_substitutions())
         if not partial.isspace():
             print(partial)
             print('------')
 
-    def print_ciphertext_with_substitutions(self):
-        print('------\n'
-              'Ciphertext:\n'
-              '------')
-        partial = self.apply_substitutions()
-        print(partial)
-        print('------')
-
     def reset_substitutions(self):
-        self.substitutions = []
+        self._substitutions = []
 
-event = EasyBreak()
+app = EasyBreak()
